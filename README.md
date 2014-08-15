@@ -1,5 +1,4 @@
-Magpie = Cocos2d-X + Cordova Plugins
-====================================
+# Magpie = Cocos2d-X + Cordova Plugins #
 
 Framework for Cocos2d-X C++ based game to call hundreds of Cordova/PhoneGap plugins
 
@@ -21,7 +20,7 @@ Taking advantage of both projects:
 
 # Example Code #
 
-This is an example to call Cordova AdMob SDK in Cocos2d-X game with C++.
+This is an example to use C++ to call Cordova AdMob Plugin in Cocos2d-X game.
 
 ```c
 #if(CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
@@ -32,30 +31,18 @@ This is an example to call Cordova AdMob SDK in Cocos2d-X game with C++.
 #define INTERSTITIAL_ADID	"ca-app-pub-6869992474017983/7563979554"
 #endif
 
-void GameScene::onReceiveAd(const char *event, const char *argsJson) {
-    Magpie::instance()->execute("AdMob", "showAd", "[true]", NULL, NULL);
-}
-
 bool GameScene::init() {
     if ( ! BaseScene::init() ) {
         return false;
     }
 
-    // register event handler
-    CordovaX::instance()->addEventListener("onReceiveAd", this, (magpie_eventselector) onReceiveAd);
-
+    // create banner
 	string args = "";
 	args = args + "[{"
-		"\"bannerId\":\"" + BANNER_ADID + "\","
-		"\"interstitialId\":\"" + INTERSTITIAL_ADID + "\","
+		"\"adId\":\"" + BANNER_ADID + "\","
 		"\"isTesting\":true,"
 		"\"autoShow\":true"
 		"}]";
-	Magpie::instance()->execute("AdMob", "setOptions", args.c_str(), NULL, NULL);
-
-    // create banner
-	args = "";
-	args = args + "[{\"adId\":\"" + BANNER_ADID + "\"}]";
 	Magpie::instance()->execute("AdMob", "createBanner", args.c_str(), NULL, NULL);
 
     return true;
@@ -82,4 +69,7 @@ It comes from the Chinese legend, Magpie Bridge over the the Milky Way, which br
 # Credit #
 
 Magpie project is created by Raymond Xie. (floatinghotpot @ github)
+
+It's based on the Cordova/Phonegap Framework.
+
 
