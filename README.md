@@ -37,14 +37,18 @@ Step 2: Patch Cocos2d-X project, add Magpie Framework to Project:
 ~/magpie/cli/magpie.js <cocos2dx_proj_dir> <AppName>
 ```
 
-> A new project root will be created: <cocos2dx_proj_dir>/../../proj_<AppName>
+> A new project root will be created: 
 
 Step 3: Use Cordova CLI to add Plugins
 
 ```
+# <cocos2dx_proj_dir>/../../proj_<AppName>
 cd <project_root>
 cordova plugin add <plugin id or path>
 ```
+
+Step 4: Write C++ code to call Plugins, build and run.
+
 
 # Example Code #
 
