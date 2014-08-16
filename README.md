@@ -6,7 +6,7 @@ Taking advantage of both projects:
 * Cocos2d-X, the most popular open source game engine. Develop game with C++/javascript/lua, hardware acceleration with OpenGL, excellent performance.
 * Cordova, **hundreds of existing plugins** to access native functionalities and 3rd party SDKs.
 
->Note: it's NOT a plugin for Cordova/PhoneGap, but a plugin framework for Cocos2d-X. It's packed like a plugin, and can be released and managed with plugman CLI.
+>Note: it's NOT a plugin for normal Cordova/PhoneGap app, but a plugin framework for Cocos2d-X. 
 
 # Project Status #
 
@@ -62,7 +62,7 @@ void GameScene::onGameOver() {
 
 # Why named "Magpie"? #
 
-It comes from the Chinese legend, Magpie Bridge over the the Milky Way, which bring the longly departed lovers together.
+It comes from the Chinese legend, Magpie Bridge over the the Milky Way, which bring the separated lovers together.
 
 ![Magpie Bridge](docs/legend.jpg)
 
