@@ -11,7 +11,7 @@ Taking advantage of both projects:
 # Project Status #
 
 * [x] Framework works on Android and iOS.
-* [ ] Utility under development.
+* [x] Utility CLI magpie.js finished.
 * [ ] Documentation and example code.
 
 # Architecture #
