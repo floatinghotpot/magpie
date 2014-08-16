@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.handywit.AppName" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>AppName</name>
+<widget id="com.handywit.__AppName__" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>__AppName__</name>
     <description>
         Magpie App that allow Cocos2d-X game to call Cordova/PhoneGap Plugins.
     </description>

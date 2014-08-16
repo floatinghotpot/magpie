@@ -13,7 +13,7 @@
 
 #if(CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 #pragma message("building android, supported")
-#include "../proj.android/jni/Magpie/MagpieBridgeJni.h"
+#include "../proj.android/jni/MagpieBridgeJni.h"
 
 #elif(CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 #pragma message("building ios, supported")

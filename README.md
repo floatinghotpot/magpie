@@ -18,6 +18,34 @@ Taking advantage of both projects:
 
 ![Magpie Bridge Architecture](docs/architecture.jpg)
 
+# How to Use? #
+
+Requirement: Following tools need be installed first.
+* git
+* node.js
+* cordova
+
+Step 1: Download Magpie Framework and CLI:
+
+```
+git clone https://github.com/HandyWit/magpie ~/magpie
+```
+
+Step 2: Patch Cocos2d-X project, add Magpie Framework to Project:
+
+```
+~/magpie/cli/magpie.js <cocos2dx_proj_dir> <AppName>
+```
+
+> A new project root will be created: <cocos2dx_proj_dir>/../../proj_<AppName>
+
+Step 3: Use Cordova CLI to add Plugins
+
+```
+cd <project_root>
+cordova plugin add <plugin id or path>
+```
+
 # Example Code #
 
 This is an example to use C++ to call Cordova AdMob Plugin in Cocos2d-X game.
