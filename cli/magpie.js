@@ -104,8 +104,7 @@ magpie_cli = {
 
 		if( files.length > 0 ) {
 			this.main_java = main_java;
-			this.main_java_src = files[0];
-			echo( "main class: " + this.main_java_src );
+			echo( "main class: " + files[0] );
 			return true;
 		}
 
@@ -222,14 +221,15 @@ magpie_cli = {
 			return false;
 		}
 		
+		var main_java_src =  this.magpie_dir + "/platforms/android/src/__AppName__.java";
 		var main_java_dest = files[0];
-		var source_code = fs.readFileSync( this.main_java_src, 'utf8' )
+		var source_code = fs.readFileSync( main_java_src + "", 'utf8' )
 			.replace("com.handywit.__AppName__", this.package_id)
 			.replace("__AppName__", this.app_name);
 		
 		fs.writeFileSync( main_java_dest, source_code, "utf8" );
 		
-		echo( "replacing main activity java: " + main_java + " ... ok" );
+		echo( "replacing main java: " + main_java_dest + " ... ok" );
 		
 		return true;
 	},
@@ -248,8 +248,14 @@ magpie_cli = {
 		return true;
 	},
 	patch_android_mk: function() {
+		var files = [ "MagpieBridgeJni.cpp", "../../Classes/Magpie.cpp" ];
+		var str0 = "hellocpp/main.cpp";
+		var strAdd = "";
+		for(var i in files) {
+			strAdd += " \\\n                   " + files[i];
+		}
 		var content = fs.readFileSync( this.proj_dir + "/proj.android/jni/Android.mk", 'utf8' )
-			.replace("hellocpp/main.cpp", "hellocpp/main.cpp \\\n                   MagpieBridgeJni.cpp");
+			.replace(str0, str0 + strAdd);
 		fs.writeFileSync( this.droid_newdir + "/jni/Android.mk", content, "utf8" );
 		echo( "patching Android.mk ... ok" );
 		return true;

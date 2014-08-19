@@ -3,7 +3,7 @@
 #include "../platform/android/jni/JniHelper.h"
 
 #include "cocos2d.h"
-#include "Magpie.h"
+#include "../../Classes/Magpie.h"
 #include "MagpieBridgeJni.h"
 
 #include <android/log.h>

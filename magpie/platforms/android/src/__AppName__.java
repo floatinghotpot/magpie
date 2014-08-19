@@ -1,4 +1,4 @@
-package com.handywit.AppName;
+package com.handywit.__AppName__;
 
 import com.handywit.magpie.MagpieActivity;
 
@@ -7,7 +7,7 @@ import org.cocos2dx.lib.Cocos2dxGLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
 
-public class AppName extends MagpieActivity {
+public class __AppName__ extends MagpieActivity {
 	
     public Cocos2dxGLSurfaceView onCreateView() {
     	Cocos2dxGLSurfaceView glSurfaceView = new Cocos2dxGLSurfaceView(this);
