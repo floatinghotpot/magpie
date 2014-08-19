@@ -1,38 +1,41 @@
 #!/usr/bin/env node
 
-var fs = require('fs');
-var path = require('path');
+var fs = require('fs'),
+	path = require('path'),
+	uuid = require('node-uuid');
 
 require("../magpie/platforms/android/cordova/node_modules/shelljs/global")
 
-echo( "Magpie CLI for node.js, version 1.0");
-echo( "Supported:\n  Cocos2d-X v2.2.1\n  Cordova v3.5.0\n");
+echo( "Magpie, Version: 1.0.20140819" );
+echo( "Based on: Cordova v3.5.0");
+echo( "Tested:  Cocos2d-X v2.2.1\n");
 
-if( process.argv.length < 4 ) {
-	echo("Missing arguments, syntax:\nmagpie.js <cocos2dx_proj_dir> <AppName>\nAbort.\n");
+if( process.argv.length < 3 ) {
+	echo("Missing arguments, syntax:\nmagpie.js <cocos2dx_proj_dir>\nAbort.\n");
 	exit(1);
 }
 
 var magpie_cli = process.argv[1];
 var proj_dir = process.argv[2];
-var app_name = process.argv[3];
 
-var cur_dir = pwd();
-var magpie_dir = path.resolve( cur_dir + "/../magpie" );
-
-echo("--- running with arguments:\nmagpie = " + magpie_dir + "\nproj_dir = " + proj_dir + "\napp_name = " + app_name +"\n");
+var magpie_dir = path.resolve( path.dirname(magpie_cli) + "/../magpie" );
+var proj_dir = path.resolve( proj_dir );
+echo("--- running with arguments:\nmagpie = " + magpie_dir + "\nproj_dir = " + proj_dir + "\n");
 
 echo("--- checking project files ... ");
 var android_manifest = proj_dir + "/proj.android/AndroidManifest.xml";
 var android_mk_src = proj_dir + "/proj.android/jni/Android.mk";
 var package_id = "";
+var app_name = "";
 
 if( test('-f', android_manifest) && test('-f', android_mk_src) ) {
 	echo( "AndroidManifest.xml found: " + android_manifest );
 	echo( "Android.mk found: " + android_mk_src );
 	package_id = grep("package=", android_manifest).replace(/package=/g, '').replace(/[ "\t\n]*/g,'');
-	echo( "package id identified: " + package_id );
+	echo( "package id: " + package_id );
 	
+	app_name = grep("<activity android:name=\".", android_manifest).replace(/activity android:name=/g, '').replace(/[ ".<\t\n]*/g,'');
+	echo( "app name: " + app_name );
 } else {
 	echo("Error, not a valid cocos2d-x project.\nAbort.\n");
 	exit(1);
@@ -69,7 +72,7 @@ var main_files = find(proj_dir + "/proj.android/src").filter(function(file) { re
 var main_java_src = "";
 if( main_files.length > 0 ) {
 	main_java_src = main_files[0];
-	echo( "android main class found: " + main_java_src );
+	echo( "main class: " + main_java_src );
 } else {
 	echo( "Error, file not found: " + main_java + "\nAbort.\n" );
 	exit(1);
@@ -166,7 +169,7 @@ echo( "patching config.xml ... ok" );
 
 echo( "\n--- patching xcode project file ..." );
 var xcode_proj_file = ios_newdir + "/" + app_name + ".xcodeproj/project.pbxproj";
-echo( xcode_proj_file );
+echo( "target file: " + xcode_proj_file );
 
 var xcode_proj_content = fs.readFileSync( xcode_proj_file, 'utf8' );
 
@@ -177,6 +180,7 @@ xcode_proj_content = xcode_proj_content
 	.replace(/\.\.\/proj\.ios/g, "../ios");
 echo( "moving and renaming Info.plist ... ok");
 
+// insert group "Plugins"
 var classes_tag = grep(/\/\* Classes \*\/,/, xcode_proj_file).replace("Classes","").replace(/[ \t\r\n\*\/,]*/g, "");
 var insert_plugins_entry = "307C750510C5A3420062BCA9 /* Plugins */,\n                                ";
 var insert_plugins_group = "307C750510C5A3420062BCA9 /* Plugins */ = {\n\
@@ -191,24 +195,101 @@ var insert_before_entry = classes_tag + " /* Classes */,";
 var insert_before_group = classes_tag + " /* Classes */ = {"
 xcode_proj_content = xcode_proj_content.replace(insert_before_entry, insert_plugins_entry + insert_before_entry)
 	.replace(insert_before_group, insert_plugins_group + insert_before_group);
-echo("adding Plugins group ... ok");
+echo("adding entry 'Plugins' ... ok");
+
+var allUuids = [];
+function generateUuid() {
+    var id = uuid.v4()
+                .replace(/-/g,'')
+                .substr(0,24)
+                .toUpperCase();
+
+    if (allUuids.indexOf(id) >= 0) {
+        return this.generateUuid();
+        
+    } else if (xcode_proj_content.indexOf(id) >= 0) {
+    	allUuids.push( id );
+        return this.generateUuid();
+        
+    } else {
+    	allUuids.push( id );
+        return id;
+    }
+}
+
+var fileTypes = {
+	".h": "sourcecode.c.h",
+	".cpp": "sourcecode.cpp.cpp",
+	".m": "sourcecode.c.objc",
+	".mm": "sourcecode.cpp.objcpp",
+	".framework" : "wrapper.framework"
+};
+
+function insertFile( filepaths, group, beforePath ) {
+	var beforeFile = path.basename( beforePath );
+	var beforeFileType = fileTypes[ path.extname( beforeFile ) ];
+	var beforeFileInGroup = beforeFile + " in " + group;
+	var patterns = [
+	              "\\/\\* " + beforeFile + " \\*\\/,",
+	              "\\/\\* " + beforeFileInGroup + " \\*\\/,",
+	              "\\/\\* " + beforeFile + " \\*\\/ = {",
+	              "\\/\\* " + beforeFileInGroup + " \\*\\/ = {"
+	              ]
+	var lines = [];
+	for(var i=0; i<patterns.length; i++) {
+		var re = new RegExp(patterns[i]);
+		var line = grep( re, xcode_proj_file );
+		lines.push( line );
+	}
+	var beforeFileTag = lines[0].replace(beforeFile,"").replace(/[ \t\r\n\*\/,]*/g, "");
+	var beforeGroupTag = lines[1].replace(beforeFileInGroup,"").replace(/[ \t\r\n\*\/,]*/g, "");
+	if(beforeFileTag.length == 0 || beforeGroupTag.length == 0) {
+		echo( "Error: entry not found: " + beforePath );
+		exit(1);
+		return false;
+	}
+	
+	var insertLines = ["", "", "", ""];
+	for(var i in filepaths) {
+		var addPath = filepaths[i];
+		var addFile = path.basename( addPath );
+		var addFileType = fileTypes[ path.extname(addFile) ];
+		var addFileInGroup = addFile + " in " + group;
+		var addFileTag = generateUuid();
+		var addGroupTag = generateUuid();
+		
+		for(var j in lines) {
+			var addLine = lines[ j ]
+				.replace(beforeFileTag, addFileTag)
+				.replace(beforeGroupTag, addGroupTag)
+				.replace(beforeFileInGroup, addFileInGroup)
+				.replace(beforePath, addPath)
+				.replace(beforeFileType, addFileType)
+				.replace(beforeFile, addFile)
+				.replace(beforeFile, addFile);
+			insertLines[j] += addLine;
+		}
+		
+		echo( "adding entry '" + addPath + "' to '" + group + "' ... ok");
+	}
+	
+	for(var j in lines) {
+		xcode_proj_content = xcode_proj_content.replace(lines[j], insertLines[j] + lines[j]);
+	}
+	
+	return true;
+}
+
+insertFile( ["Magpie.framework"], "Frameworks", "System/Library/Frameworks/Foundation.framework" );
+insertFile( ["MagpieBridgeiOS.h", "MagpieBridgeiOS.mm"], "Sources", "main.m" );
+insertFile( ["../Classes/Magpie.h", "../Classes/Magpie.cpp"], "Sources", "AppDelegate.cpp" );
 
 fs.writeFileSync( xcode_proj_file, xcode_proj_content, "utf8" );
-echo( "patching xcode project files ... ok");
+echo( "writting xcode project files ... ok");
 
 echo( "done.\n" );
 
 echo( "project folder: " + proj_root )
-echo( "--- Final step:" );
-echo( "Please open Xcode project file, add following files:" )
-var files = [ "ios/Magpie.Framework",
-              "ios/MagpieBridgeiOS.h",
-              "ios/MagpieBridgeiOS.mm",
-              "../Classes/Magpie.h",
-              "../Classes/Magpie.cpp" ];
-for(var i in files) {
-	echo( files[i] )
-}
 
 echo( "\nGood luck!\n")
 

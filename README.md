@@ -31,13 +31,13 @@ Step 1: Download Magpie Framework and CLI:
 git clone https://github.com/HandyWit/magpie ~/magpie
 ```
 
-Step 2: Patch Cocos2d-X project, add Magpie Framework to Project:
+Step 2: Migrate Cocos2d-X project and add Magpie Framework:
 
 ```
 ~/magpie/cli/magpie.js <cocos2dx_proj_dir> <AppName>
 ```
 
-> A new project root will be created: 
+> A new project root will be created. 
 
 Step 3: Use Cordova CLI to add Plugins
 
