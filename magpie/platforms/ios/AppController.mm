@@ -1,7 +1,7 @@
 #import "EAGLView.h"
 #import "cocos2d.h"
 #import "AppDelegate.h"
-#import "Magpie.h"
+#import "../Classes/Magpie.h"
 #import "AppController.h"
 
 @implementation AppController
