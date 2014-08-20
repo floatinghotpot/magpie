@@ -179,6 +179,7 @@ magpie_cli = {
 		var droid_srcdir =  this.magpie_dir + "/platforms/android";
 		cp( '-R', droid_srcdir + "/cordova", this.droid_newdir + "/" );
 		cp( '-R', droid_srcdir + "/jni/MagpieBridgeJni.*", this.droid_newdir + "/jni/" );
+		cp( '-R', droid_srcdir + "/libs/cordova-framework.jar", this.droid_newdir + "/libs/" );
 		cp( '-R', droid_srcdir + "/libs/magpie-framework.jar", this.droid_newdir + "/libs/" );
 		cp( '-R', droid_srcdir + "/res/xml/config.xml", this.droid_newdir + "/res/xml/" );
 		echo( "copying magpie android files ... ok");
@@ -186,6 +187,7 @@ magpie_cli = {
 		var ios_srcdir = this.magpie_dir + "/platforms/ios";
 		cp( '-R', ios_srcdir + "/cordova", this.ios_newdir + "/" );
 		cp( '-R', ios_srcdir + "/CordovaLib", this.ios_newdir + "/" );
+		cp( '-R', ios_srcdir + "/Cordova.framework", this.ios_newdir + "/" );
 		cp( '-R', ios_srcdir + "/Magpie.framework", this.ios_newdir + "/" );
 		cp( '-f', ios_srcdir + "/MagpieBridgeiOS.*", this.ios_newdir + "/" );
 		cp( '-f', ios_srcdir + "/AppController.*", this.ios_newdir + "/" );
@@ -329,7 +331,14 @@ magpie_cli = {
 				".framework" : "wrapper.framework"
 			};
 
+		if(this.xcode_proj_content.indexOf("FRAMEWORK_SEARCH_PATHS =") < 0) {
+			var str_buildsettings = "buildSettings = {";
+			var add_search_paths = "\nFRAMEWORK_SEARCH_PATHS = ( \n\"$(inherited)\", \n\"$(PROJECT_DIR)\", );";
+			this.xcode_proj_content = this.xcode_proj_content.replace( str_buildsettings, str_buildsettings + add_search_paths );
+		}
+
 		return this.insertFile( ["Magpie.framework", 
+		                         "Cordova.framework",
 		                         "System/Library/Frameworks/AssetsLibrary.framework", 
 		                         "System/Library/Frameworks/MobileCoreServices.framework"], "Frameworks", "System/Library/Frameworks/Foundation.framework" ) &&
 		                         
@@ -382,16 +391,10 @@ magpie_cli = {
 					.replace(beforeFileType, addFileType)
 					.replace(beforeFile, addFile)
 					.replace(beforeFile, addFile);
-				if(addLine.indexOf("Magpie.framework") >= 0) {
+				if((addLine.indexOf(".framework") >= 0) && (addLine.indexOf("System/Library/Frameworks") < 0)) {
 					addLine = addLine
 						.replace("SDKROOT", "SOURCE_ROOT")
-						.replace("name = Magpie.framework; ", "");
-					
-					if(this.xcode_proj_content.indexOf("FRAMEWORK_SEARCH_PATHS =") < 0) {
-						var str_buildsettings = "buildSettings = {";
-						var add_search_paths = "\nFRAMEWORK_SEARCH_PATHS = ( \n\"$(inherited)\", \n\"$(PROJECT_DIR)\", );";
-						this.xcode_proj_content = this.xcode_proj_content.replace( str_buildsettings, str_buildsettings + add_search_paths );
-					}
+						.replace("name = " + addFile + "; ", "");
 					
 				}
 				insertLines[j] += addLine;
