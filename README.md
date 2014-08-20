@@ -34,7 +34,7 @@ git clone https://github.com/HandyWit/magpie ~/magpie
 Step 2: Migrate Cocos2d-X project and add Magpie Framework:
 
 ```
-~/magpie/cli/magpie.js <cocos2dx_proj_dir> <AppName>
+~/magpie/cli/magpie.js <cocos2dx_proj_dir> 
 ```
 
 > A new project root will be created. 
@@ -42,13 +42,12 @@ Step 2: Migrate Cocos2d-X project and add Magpie Framework:
 Step 3: Use Cordova CLI to add Plugins
 
 ```
-# <cocos2dx_proj_dir>/../../proj_<AppName>
+# <project_root> = <cocos2dx_proj_dir>/../../proj_<AppName>
 cd <project_root>
 cordova plugin add <plugin id or path>
 ```
 
 Step 4: Write C++ code to call Plugins, build and run.
-
 
 # Example Code #
 
@@ -73,6 +72,7 @@ bool GameScene::init() {
 	args = args + "[{"
 		"\"adId\":\"" + BANNER_ADID + "\","
 		"\"isTesting\":true,"
+                "\"overlap\":true,"
 		"\"autoShow\":true"
 		"}]";
 	Magpie::instance()->execute("AdMob", "createBanner", args.c_str(), NULL, NULL);
