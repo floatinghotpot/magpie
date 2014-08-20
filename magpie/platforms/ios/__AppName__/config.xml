@@ -19,7 +19,7 @@
     <feature name="LocalStorage">
         <param name="ios-package" value="CDVLocalStorage" />
     </feature>
-    <name>AppName</name>
+    <name>__AppName__</name>
     <description>
         Magpie App that allow Cocos2d-X game to call Cordova/PhoneGap Plugins.
     </description>

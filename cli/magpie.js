@@ -305,15 +305,17 @@ magpie_cli = {
 		
 		var line1 = classes_tag + " /* Classes */,";
 		var line2 = classes_tag + " /* Classes */ = {"
+		
+		var plugins_tag = this.generateUUID();
 
-		var add_line1 = this.generateUUID() + " /* Plugins */,\n                                ";
-		var add_line2 = this.generateUUID() + " /* Plugins */ = {\n\
+		var add_line1 = plugins_tag + " /* Plugins */,\n                                ";
+		var add_line2 = plugins_tag + " /* Plugins */ = {\n\
 		                        isa = PBXGroup;\n\
 		                        children = (\n\
 		                        );\n\
 		                        name = Plugins;\n\
-		                        path = " + this.app_name + "/Plugins;\n\
-		                        sourceTree = SOURCE_ROOT;\n\
+		                        path = \"" + this.app_name + "/Plugins\";\n\
+		                        sourceTree = \"<group>\";\n\
 		                };\n                ";
 		this.xcode_proj_content = this.xcode_proj_content
 			.replace(line1, add_line1 + line1)
@@ -328,9 +330,34 @@ magpie_cli = {
 				".cpp": "sourcecode.cpp.cpp",
 				".m": "sourcecode.c.objc",
 				".mm": "sourcecode.cpp.objcpp",
-				".framework" : "wrapper.framework"
+				".framework": "wrapper.framework",
+				".png": "image.png",
+				".xml": "text.xml"
 			};
 
+		// add -all_load to ld flags, 
+		// or else will report error for obj-c category extension on NSString, etc.
+		/*
+		 OTHER_LDFLAGS = "-all_load";
+        PRODUCT_NAME = MagpieDemo;*/
+		var pattern = "OTHER_LDFLAGS = ", all_load = "-all_load";
+		var re = new RegExp( pattern );
+		var other_ld_flags = grep(re, this.xcode_proj_file);
+		if( other_ld_flags.indexOf(pattern) >= 0 ) {
+			if(other_ld_flags.indexOf(all_load) >= 0) {
+				// already has flag -all_load
+			} else {
+				// has other flags but no -all_load yet
+				this.xcode_proj_content = this.xcode_proj_content.replace(pattern + "\"", pattern + "\"" + all_load + " ");
+			}
+		} else {
+			var other_ld_flags = pattern + "\"" + all_load + "\";\n\t\t\t\t";
+			var product_name = "PRODUCT_NAME = " + this.app_name + ";"
+			var re = new RegExp( product_name, "g");
+			this.xcode_proj_content = this.xcode_proj_content.replace(re, other_ld_flags + product_name);
+		}
+		
+		// add project dir to framework search path, as we have 2 custom frameworks.
 		if(this.xcode_proj_content.indexOf("FRAMEWORK_SEARCH_PATHS =") < 0) {
 			var str_buildsettings = "buildSettings = {";
 			var add_search_paths = "\nFRAMEWORK_SEARCH_PATHS = ( \n\"$(inherited)\", \n\"$(PROJECT_DIR)\", );";
@@ -340,13 +367,20 @@ magpie_cli = {
 		return this.insertFile( ["Magpie.framework", 
 		                         "Cordova.framework",
 		                         "System/Library/Frameworks/AssetsLibrary.framework", 
-		                         "System/Library/Frameworks/MobileCoreServices.framework"], "Frameworks", "System/Library/Frameworks/Foundation.framework" ) &&
+		                         "System/Library/Frameworks/MobileCoreServices.framework"], 
+		                         "Frameworks", "System/Library/Frameworks/Foundation.framework" ) &&
 		                         
 			this.insertFile( ["MagpieBridgeiOS.h", 
-			                  "MagpieBridgeiOS.mm"], "Sources", "AppController.mm" ) &&
+			                  "MagpieBridgeiOS.mm"], 
+			                  "Sources", "AppController.mm" ) &&
 			                  
 			this.insertFile( ["../Classes/Magpie.h", 
-			                  "../Classes/Magpie.cpp"], "Sources", "../Classes/AppDelegate.cpp" );
+			                  "../Classes/Magpie.cpp"], 
+			                  "Sources", "../Classes/AppDelegate.cpp" ) &&
+			                  
+			this.insertFile( [ this.app_name + "/config.xml"], 
+							  "Resources", "Default.png" ) 
+			                  ;
 	},
 	insertFile: function( filepaths, group, beforePath ) {
 		var beforeFile = path.basename( beforePath );
@@ -377,12 +411,14 @@ magpie_cli = {
 			if(this.xcode_proj_content.indexOf(addPath) > 0) continue;
 			
 			var addFile = path.basename( addPath );
+			var addFileExt = path.extname(addFile);
 			var addFileInGroup = addFile + " in " + group;
-			var addFileType = this.fileTypes[ path.extname(addFile) ];
+			var addFileType = this.fileTypes[ addFileExt ];
 			var addFileTag = this.generateUUID();
 			var addGroupTag = this.generateUUID();
 			
 			for(var j in lines) {
+				if((addFileExt == ".h") && (lines[j].indexOf(" in " + group) >= 0)) continue;
 				var addLine = lines[ j ]
 					.replace(beforeFileTag, addFileTag)
 					.replace(beforeGroupTag, addGroupTag)
@@ -396,6 +432,10 @@ magpie_cli = {
 						.replace("SDKROOT", "SOURCE_ROOT")
 						.replace("name = " + addFile + "; ", "");
 					
+				} else if(addLine.indexOf("config.xml") >= 0) {
+					if(addLine.indexOf("name = ") < 0) {
+						addLine = addLine.replace("path = ", "name = " + addFile + "; path = ");
+					}
 				}
 				insertLines[j] += addLine;
 			}
