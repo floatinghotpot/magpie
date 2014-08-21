@@ -49,6 +49,12 @@ cordova plugin add <plugin id or path>
 
 Step 4: Write C++ code to call Plugins, build and run.
 
+# Folder Structure #
+
+Cocos2d-X Project | After Migrate to Magpie
+------------------|-----------------------
+[Screenshot](docs/cocos2dx_folders.png) | [Screenshot](docs/magpie_folders.png) 
+
 # Example Code #
 
 This is an example to use C++ to call Cordova AdMob Plugin in Cocos2d-X game.
