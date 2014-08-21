@@ -71,7 +71,7 @@ cordova.exec( successCallback, failureCallback, 'AdMob', 'createBanner', [ optio
 ```
 Example: https://github.com/floatinghotpot/cordova-admob-pro/blob/master/www/AdMob.js
 
-In Cocos2d-X project, call the interface with Magpie, see following example code.
+In Cocos2d-X project, using Magpie to call the plugin interface with C++, see following example code.
 
 # Example C++ Code #
 
@@ -96,7 +96,7 @@ bool GameScene::init() {
 	args = args + "[{"
 		"\"adId\":\"" + BANNER_ADID + "\","
 		"\"isTesting\":true,"
-                "\"overlap\":true,"
+		"\"overlap\":true,"
 		"\"autoShow\":true"
 		"}]";
 	Magpie::instance()->execute("AdMob", "createBanner", args.c_str(), NULL, NULL);
