@@ -150,7 +150,7 @@ magpie_cli = {
 		fs.renameSync( this.proj_newdir + "/proj.ios", this.proj_newdir + "/ios" );
 		this.droid_newdir = this.proj_newdir + "/android";
 		this.ios_newdir = this.proj_newdir + "/ios";
-		echo( "copy from cocos2d-x project files ... ok");
+		echo( "copying cocos2d-x project files ... ok");
 		
 		return true;
 	},
@@ -202,6 +202,7 @@ magpie_cli = {
 			this.replace_main_java() &&
 			this.update_config_xml() &&
 			this.patch_android_mk() &&
+			this.patch_eclipse_project_file() &&
 			this.patch_xcode_project_file();
 	},
 	patch_app_delegate_cpp: function() {
@@ -231,7 +232,7 @@ magpie_cli = {
 		
 		fs.writeFileSync( main_java_dest, source_code, "utf8" );
 		
-		echo( "replacing main java: " + main_java_dest + " ... ok" );
+		echo( "replacing main java: " + main_java + " ... ok" );
 		
 		return true;
 	},
@@ -262,6 +263,20 @@ magpie_cli = {
 		echo( "patching Android.mk ... ok" );
 		return true;
 	},
+	patch_eclipse_project_file: function() {
+		echo( "\n--- patching eclipse project file ..." );
+		
+		this.eclipse_proj_file = this.droid_newdir + "/.project";
+		echo( "target file: " + this.eclipse_proj_file );
+		
+		var content = fs.readFileSync( this.eclipse_proj_file, 'utf8' )
+				.replace("COCOS2DX/projects/" + this.app_name + "/Classes", "PROJECT_DOC/../Classes" );
+		fs.writeFileSync( this.eclipse_proj_file, content, "utf8" );
+		
+		echo( "patching eclipse project file ... ok.");
+
+		return true;
+	},
 	patch_xcode_project_file: function() {
 		echo( "\n--- patching xcode project file ..." );
 		
@@ -278,7 +293,11 @@ magpie_cli = {
 			.replace(/\.\.\/proj\.ios/g, "../ios");
 		echo( "moving and renaming Info.plist ... ok");
 		
-		if( this.insertPluginsEntry() && this.insertFilesEntry() ) {
+		if( this.insertPluginsEntry() && 
+			this.insertFilesEntry() &&
+			this.addForceLoad() &&
+			this.addFrameworkSearchPath() ) {
+			
 			fs.writeFileSync( this.xcode_proj_file, this.xcode_proj_content, "utf8" );
 			echo( "writting xcode project files ... ok");
 			return true;
@@ -334,35 +353,6 @@ magpie_cli = {
 				".png": "image.png",
 				".xml": "text.xml"
 			};
-
-		// add -all_load to ld flags, 
-		// or else will report error for obj-c category extension on NSString, etc.
-		/*
-		 OTHER_LDFLAGS = "-all_load";
-        PRODUCT_NAME = MagpieDemo;*/
-		var pattern = "OTHER_LDFLAGS = ", all_load = "-all_load";
-		var re = new RegExp( pattern );
-		var other_ld_flags = grep(re, this.xcode_proj_file);
-		if( other_ld_flags.indexOf(pattern) >= 0 ) {
-			if(other_ld_flags.indexOf(all_load) >= 0) {
-				// already has flag -all_load
-			} else {
-				// has other flags but no -all_load yet
-				this.xcode_proj_content = this.xcode_proj_content.replace(pattern + "\"", pattern + "\"" + all_load + " ");
-			}
-		} else {
-			var other_ld_flags = pattern + "\"" + all_load + "\";\n\t\t\t\t";
-			var product_name = "PRODUCT_NAME = " + this.app_name + ";"
-			var re = new RegExp( product_name, "g");
-			this.xcode_proj_content = this.xcode_proj_content.replace(re, other_ld_flags + product_name);
-		}
-		
-		// add project dir to framework search path, as we have 2 custom frameworks.
-		if(this.xcode_proj_content.indexOf("FRAMEWORK_SEARCH_PATHS =") < 0) {
-			var str_buildsettings = "buildSettings = {";
-			var add_search_paths = "\nFRAMEWORK_SEARCH_PATHS = ( \n\"$(inherited)\", \n\"$(PROJECT_DIR)\", );";
-			this.xcode_proj_content = this.xcode_proj_content.replace( str_buildsettings, str_buildsettings + add_search_paths );
-		}
 
 		return this.insertFile( ["Magpie.framework", 
 		                         "Cordova.framework",
@@ -445,6 +435,45 @@ magpie_cli = {
 		
 		for(var j in lines) {
 			this.xcode_proj_content = this.xcode_proj_content.replace(lines[j], insertLines[j] + lines[j]);
+		}
+		
+		return true;
+	},
+	addForceLoad : function() {
+		// add -force_load to ld flags, or else will report error for obj-c category extension on NSString, etc.
+		// avoid using -all_load, sometimes other libs may have same symbols causing conflict.
+		/*
+		 OTHER_LDFLAGS = "-force_load $(SOURCE_ROOT)/Cordova.framework/Cordova";
+        PRODUCT_NAME = MagpieDemo;*/
+		var pattern = "OTHER_LDFLAGS = ", all_load = "-all_load", force_load = "-force_load $(SOURCE_ROOT)/Cordova.framework/Cordova";
+		var re = new RegExp( pattern );
+		var other_ld_flags = grep(re, this.xcode_proj_file);
+		if( other_ld_flags.indexOf(pattern) >= 0 ) {
+			if(other_ld_flags.indexOf(all_load) >= 0) {
+				// already has flag -all_load
+				echo( "Found '-force_load' in ld flags ... ok" );
+			} else {
+				// has other flags but no -all_load yet
+				this.xcode_proj_content = this.xcode_proj_content.replace(pattern + "\"", pattern + "\"" + force_load + " ");
+				echo( "adding '-force_load' to ld flags ... ok" );
+			}
+		} else {
+			var other_ld_flags = pattern + "\"" + force_load + "\";\n\t\t\t\t";
+			var product_name = "PRODUCT_NAME = " + this.app_name + ";"
+			var re = new RegExp( product_name, "g");
+			this.xcode_proj_content = this.xcode_proj_content.replace(re, other_ld_flags + product_name);
+			echo( "adding '-force_load' to ld flags ... ok" );
+		}
+		
+		return true;
+	},
+	addFrameworkSearchPath : function() {
+		// add project dir to framework search path, as we have 2 custom frameworks.
+		if(this.xcode_proj_content.indexOf("FRAMEWORK_SEARCH_PATHS =") < 0) {
+			var str_buildsettings = "buildSettings = {";
+			var add_search_paths = "\nFRAMEWORK_SEARCH_PATHS = ( \n\"$(inherited)\", \n\"$(PROJECT_DIR)\", );";
+			this.xcode_proj_content = this.xcode_proj_content.replace( str_buildsettings, str_buildsettings + add_search_paths );
+			echo( "adding project dir to framework search paths ... ok" );
 		}
 		
 		return true;
