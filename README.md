@@ -98,13 +98,36 @@ void GameScene::onGameOver() {
 
 ```
 
+# How to know the interface? #
+
+Here is the standard folder structure of a Cordova plugin.
+
+![Screenshot](docs/plugin_folders.png)
+
+README.md is the documentation for plugin. 
+Example: https://github.com/floatinghotpot/cordova-admob-pro/blob/master/README.md
+
+The .js file under www, describe the call interface, like:
+```javascript
+cordova.exec( successCallback, failureCallback, 'AdMob', 'createBanner', [ options ] );
+```
+Example: https://github.com/floatinghotpot/cordova-admob-pro/blob/master/www/AdMob.js
+
+# Where to Get More Cordova Plugins? #
+
+Apache Cordova Official Plugin Registry: http://plugins.cordova.io/
+
+![Screenshot](docs/plugin_registry.jpg)
+
+There are more than 300+ plugins so far, including Apache Cordova official plugins for camera, contacts, motion, etc.
+
 # Why named "Magpie"? #
 
 It comes from the Chinese legend, Magpie Bridge over the the Milky Way, which bring the separated lovers together.
 
 ![Magpie Bridge](docs/legend.jpg)
 
-# Credit #
+# Credits #
 
 Magpie project is created by Raymond Xie. (floatinghotpot @ github)
 
