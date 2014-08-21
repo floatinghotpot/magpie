@@ -116,6 +116,10 @@ void GameScene::onGameOver() {
 
 ```
 
+# Project Example #
+
+Here is a demo project ["MagpieDemo"](https://github.com/HandyWit/MagpieDemo), use Cordova AdMob Plugin in Cocos2d-X Game.
+
 # Where to Get More Cordova Plugins? #
 
 Apache Cordova Official Plugin Registry: http://plugins.cordova.io/
