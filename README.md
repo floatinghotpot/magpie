@@ -33,9 +33,7 @@ git clone https://github.com/HandyWit/magpie ~/magpie
 
 Step 2: Migrate Cocos2d-X project and add Magpie Framework:
 
-Usually, a cocos2d-x project is located at: COCOS2DX/projects/GameName. 
-
-Run following commands:
+Usually, a cocos2d-x project is located at: COCOS2DX/projects/GameName. Run following commands:
 ```
 ~/magpie/cli/magpie.js /path/to/cocos2d-x/projects/GameName
 ```
@@ -59,7 +57,23 @@ Cocos2d-X Project | After Migrate to Magpie
 ------------------|-----------------------
 ![Screenshot](docs/cocos2dx_folders.png) | ![Screenshot](docs/magpie_folders.png) 
 
-# Example Code #
+# Interface of Cordova Plugin #
+
+A typical folder structure of a Cordova plugin looks like:
+
+![Screenshot](docs/plugin_folders.png)
+
+README.md is the documentation for plugin. Example: https://github.com/floatinghotpot/cordova-admob-pro/blob/master/README.md
+
+The .js file under www, describe the call interface, like:
+```javascript
+cordova.exec( successCallback, failureCallback, 'AdMob', 'createBanner', [ options ] );
+```
+Example: https://github.com/floatinghotpot/cordova-admob-pro/blob/master/www/AdMob.js
+
+In Cocos2d-X project, call the interface with Magpie, see following example code.
+
+# Example C++ Code #
 
 This is an example to use C++ to call Cordova AdMob Plugin in Cocos2d-X game.
 
@@ -101,21 +115,6 @@ void GameScene::onGameOver() {
 }
 
 ```
-
-# How to know the interface? #
-
-Here is the standard folder structure of a Cordova plugin.
-
-![Screenshot](docs/plugin_folders.png)
-
-README.md is the documentation for plugin. 
-Example: https://github.com/floatinghotpot/cordova-admob-pro/blob/master/README.md
-
-The .js file under www, describe the call interface, like:
-```javascript
-cordova.exec( successCallback, failureCallback, 'AdMob', 'createBanner', [ options ] );
-```
-Example: https://github.com/floatinghotpot/cordova-admob-pro/blob/master/www/AdMob.js
 
 # Where to Get More Cordova Plugins? #
 
