@@ -33,18 +33,22 @@ git clone https://github.com/HandyWit/magpie ~/magpie
 
 Step 2: Migrate Cocos2d-X project and add Magpie Framework:
 
-```
-~/magpie/cli/magpie.js <cocos2dx_proj_dir> 
-```
+Usually, a cocos2d-x project is located at: COCOS2DX/projects/GameName. 
 
-> A new project root will be created. 
+Run following commands:
+```
+~/magpie/cli/magpie.js /path/to/cocos2d-x/projects/GameName
+```
+A new project root will be created at.
+```
+# <project_root> = /path/to/cocos2d-x/proj_GameName
+``` 
 
 Step 3: Use Cordova CLI to add Plugins
 
 ```
-# <project_root> = <cocos2dx_proj_dir>/../../proj_<AppName>
 cd <project_root>
-cordova plugin add <plugin id or path>
+cordova plugin add <plugin_id_or_path>
 ```
 
 Step 4: Write C++ code to call Plugins, build and run.
